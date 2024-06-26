@@ -74,22 +74,22 @@ viz_data <- new_df %>%
     Weather_Conditions == "Fog or mist" ~ "Fog",
     Weather_Conditions %in% c("Raining + high winds", "Raining no high winds") ~ "Raining",
     str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
-    TRUE ~ as.character(Weather_Conditions)
+    FALSE ~ as.character(Weather_Conditions)
   ) )
 
-weather_conditions <- viz_data %>% select(Weather_category, Number_of_Casualties) %>%
+
+weather_conditions <- viz_data %>% select(Weather_category, Number_of_Casualties, Year) %>%
   group_by(Weather_category) %>%
   summarise(total_casualties = sum(Number_of_Casualties)) %>%
   mutate(percentage = total_casualties / sum(total_casualties) * 100)
 
+accident_severity <- viz_data %>% 
 
 
-
-
-donut_chart <- ggplot(viz_data, aes(x = 2, y = Number_of_Casualties, fill = Weather_category)) +
+donut_chart <- ggplot(weather_conditions, aes(x = 2, y = total_casualties, fill = Weather_category)) +
   geom_bar(stat = "identity", width = 1) +
   coord_polar(theta = "y") +
-  xlim(0.5, 2.5) + # Adjust to create a donut shape
+  xlim(0.5, 2.5) + # Adjust to create a doghnut shape
   theme_void() +  # Remove background, grid, and axis
   theme(legend.position = "right") +
   geom_text(aes(label = paste0(round(percentage, 1), "%")), 
