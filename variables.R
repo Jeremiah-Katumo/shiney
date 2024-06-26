@@ -76,3 +76,28 @@ viz_data <- new_df %>%
     str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
     TRUE ~ as.character(Weather_Conditions)
   ) )
+
+weather_conditions <- viz_data %>% select(Weather_category, Number_of_Casualties) %>%
+  group_by(Weather_category) %>%
+  summarise(total_casualties = sum(Number_of_Casualties)) %>%
+  mutate(percentage = total_casualties / sum(total_casualties) * 100)
+
+
+
+
+
+donut_chart <- ggplot(viz_data, aes(x = 2, y = Number_of_Casualties, fill = Weather_category)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  xlim(0.5, 2.5) + # Adjust to create a donut shape
+  theme_void() +  # Remove background, grid, and axis
+  theme(legend.position = "right") +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), 
+            position = position_stack(vjust = 0.5)) +
+  labs(title = "Donut Chart Example")
+
+
+
+
+
+
