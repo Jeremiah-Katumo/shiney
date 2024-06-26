@@ -23,3 +23,4 @@ install.packages("h2o", type="source", repos="https://h2o-release.s3.amazonaws.c
 # Finally, let's load H2O and start up an H2O cluster
 library(h2o)
 h2o.init()
+
