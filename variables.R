@@ -65,3 +65,14 @@ bus_counts <- grep("^(Bus|Minibus)", new_df$Vehicle_Type, value = TRUE) %>%
 
 other_vehicle_counts <- grep("^(Other|Pedal|Ridden)", new_df$Vehicle_Type, value = TRUE) %>%
   table() %>% as.data.frame() %>% select(Freq) %>% sum()
+
+
+### VISUALIZATIONS
+viz_data <- new_df %>%
+  mutate(Weather_category = case_when(
+    Weather_Conditions %in% c("Fine + high winds", "Fine no high winds") ~ "Fine",
+    Weather_Conditions == "Fog or mist" ~ "Fog",
+    Weather_Conditions %in% c("Raining + high winds", "Raining no high winds") ~ "Raining",
+    str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
+    TRUE ~ as.character(Weather_Conditions)
+  ) )
