@@ -8,9 +8,11 @@ library(shinydashboard)
 library(shinyjs)
 library(DT)                   # interface to the JavaScript library DataTables
 library(r2d3)
+library(purrr)                # for function programming tools
+library(rlang)
 
 
-accident_data <- read_csv("D:/Tableau/accident data.csv")
+accident_data <- read_csv("D:/Tableau/accident data.csv", show_col_types = FALSE)
 View(accident_data)
 
 new_df <- accident_data %>%
@@ -20,6 +22,7 @@ new_df <- accident_data %>%
 ## Date variables lists
 year_list <- as.list(c(2019, 2020, 2021, 2022)) %>%
   set_names(c("2019", "2020", "2021", "2022"))
+year_list$`All Years` <- 99
 
 month_list <- as.list(1:12) %>%
   set_names(month.name)
@@ -71,6 +74,16 @@ total_casualties <- new_df %>%
 
 fatal_casualties <- new_df %>%
   filter(Accident_Severity == "Fatal") %>%
+  select(Number_of_Casualties) %>%
+  sum()
+
+seriouse_casualties <- new_df %>%
+  filter(Accident_Severity == "Serious") %>%
+  select(Number_of_Casualties) %>%
+  sum()
+
+slight_casualties <- new_df %>%
+  filter(Accident_Severity == "Slight") %>%
   select(Number_of_Casualties) %>%
   sum()
 
