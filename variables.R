@@ -9,6 +9,7 @@ library(shinyjs)
 library(DT)                   # interface to the JavaScript library DataTables
 library(r2d3)
 
+
 accident_data <- read_csv("D:/Tableau/accident data.csv")
 View(accident_data)
 
@@ -65,6 +66,11 @@ total_accidents <- new_df %>%
   count()
 
 total_casualties <- new_df %>%
+  select(Number_of_Casualties) %>%
+  sum()
+
+fatal_casualties <- new_df %>%
+  filter(Accident_Severity == "Fatal") %>%
   select(Number_of_Casualties) %>%
   sum()
 

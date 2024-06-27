@@ -14,6 +14,8 @@ server <- function(input, output, session) {
         Weather_Conditions %in% c("Raining + high winds", "Raining no high winds") ~ "Raining",
         str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
         FALSE ~ as.character(Weather_Conditions)
-      ) )
+      ) ) %>%
+      mutate(`Modified Date` = `Accident Date`) %>%
+      separate(`Modified Date`, into = c("Day", "Month", "Year"))
   })
 }
