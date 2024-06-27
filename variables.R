@@ -3,6 +3,11 @@ library(recipes)
 library(dplyr)
 library(h2o)
 library(readr)
+library(shiny)
+library(shinydashboard)
+library(shinyjs)
+library(DT)                   # interface to the JavaScript library DataTables
+library(r2d3)
 
 accident_data <- read_csv("D:/Tableau/accident data.csv")
 View(accident_data)
@@ -10,6 +15,50 @@ View(accident_data)
 new_df <- accident_data %>%
   mutate(`Modified Date` = `Accident Date`) %>%
   separate(`Modified Date`, into = c("Day", "Month", "Year"))
+
+## Date variables lists
+year_list <- as.list(c(2019, 2020, 2021, 2022)) %>%
+  set_names(c("2019", "2020", "2021", "2022"))
+
+month_list <- as.list(1:12) %>%
+  set_names(month.name)
+month_list$`All Year` <- 99
+
+## Vehicle list
+vehicle <- new_df %>%
+  mutate(`Modified Vehicle_Type` = case_when(
+    grepl("^Motorcycle", Vehicle_Type) ~ "Motorcycle",
+    grepl("^Goods", Vehicle_Type) ~ "Transit",
+    grepl("^(Car|Taxi|Van)", Vehicle_Type) ~ "Cars",
+    grepl("^Agricultural", Vehicle_Type) ~ "Agricultural",
+    grepl("^(Bus|Minibus)", Vehicle_Type) ~ "Bus",
+    grepl("^(Other|Pedal|Ridden)", Vehicle_Type) ~ "Others",
+    TRUE ~ "Others"  # Catch-all for any values that don't match the patterns
+  )) %>%
+  group_by(`Modified Vehicle_Type`) %>%
+  summarize(n = n(), .groups = 'drop')
+vehicle_list <- setNames(as.list(vehicle$`Modified Vehicle_Type`), vehicle$`Modified Vehicle_Type`)
+
+## Weather list
+weather <- new_df %>%
+  mutate(Weather_category = case_when(
+    Weather_Conditions %in% c("Fine + high winds", "Fine no high winds") ~ "Fine",
+    Weather_Conditions == "Fog or mist" ~ "Fog",
+    Weather_Conditions %in% c("Raining + high winds", "Raining no high winds") ~ "Raining",
+    str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
+    TRUE ~ "Others"
+  ) ) %>%
+  group_by(Weather_category) %>%
+  summarize(n = n(), .groups = 'drop')
+weather_list <- setNames(as.list(weather$Weather_category), weather$Weather_category)
+
+# Accident severity list
+severity <- new_df %>%
+  group_by(Accident_Severity) %>%
+  summarise(n = n(), .groups = 'drop')
+severity_list <- setNames(as.list(severity$Accident_Severity), severity$Accident_Severity)
+
+
 
 total_accidents <- new_df %>%
   select(`Accident Date`) %>%
@@ -83,7 +132,10 @@ weather_conditions <- viz_data %>% select(Weather_category, Number_of_Casualties
   summarise(total_casualties = sum(Number_of_Casualties)) %>%
   mutate(percentage = total_casualties / sum(total_casualties) * 100)
 
-accident_severity <- viz_data %>% 
+accident_severity <- viz_data %>% select(Accident_Severity, Number_of_Casualties) %>%
+  group_by(Accident_Severity) %>%
+  summarise(total_accidents_severity = sum(Number_of_Casualties)) %>%
+  mutate(percentage = total_accidents_severity / sum(total_accidents_severity) * 100)
 
 
 donut_chart <- ggplot(weather_conditions, aes(x = 2, y = total_casualties, fill = Weather_category)) +
