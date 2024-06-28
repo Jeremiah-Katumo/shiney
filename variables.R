@@ -170,5 +170,51 @@ donut_chart <- ggplot(weather_conditions, aes(x = 2, y = total_casualties, fill 
 
 
 
+# Calculate and display total casualties with percentage change
+output$total_casualties <- renderValueBox({
+  data <- base_accidents()
+  
+  # Calculate total casualties for the selected year
+  total_current_year <- data %>%
+    filter(Year == input$current_year) %>%
+    summarise(total_casualties = sum(Number_of_Casualties)) %>%
+    pull(total_casualties)
+  
+  # Calculate total casualties for the previous year
+  if (input$previous_year != "All Years") {
+    previous_year <- input$previous_year
+    total_previous_year <- data %>%
+      filter(Year == previous_year) %>%
+      summarise(total_casualties = sum(Number_of_Casualties)) %>%
+      pull(total_casualties)
+    
+    # Calculate percentage change
+    if (total_previous_year != 0) {
+      percentage_change <- ((total_current_year - total_previous_year) / total_previous_year) * 100
+    } else {
+      percentage_change <- NA
+    }
+    
+    # Format percentage change
+    if (!is.na(percentage_change)) {
+      percentage_change <- paste0(round(percentage_change, 1), "%")
+    } else {
+      percentage_change <- "N/A"
+    }
+  } else {
+    percentage_change <- "N/A"
+  }
+  
+  # Format total casualties
+  total_current_year <- prettyNum(total_current_year, big.mark = ",")
+  
+  valueBox(
+    value = total_current_year, 
+    subtitle = "Total Casualties", 
+    footer = percentage_change,
+    icon = icon("chart-bar"), 
+    color = "navy"
+  )
+})
 
 

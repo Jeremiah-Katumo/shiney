@@ -2,30 +2,30 @@ library(shiny)
 source("variables.R", local = TRUE)
 
 ui <- dashboardPage(
-  title = "www.silas.com",
+  title = "www.katush.com",
                     
   dashboardHeader(title = "Road Accidents Dashboard", titleWidth = 200),
   
   dashboardSidebar(
     sidebarMenu(
       selectInput(
-        inputId = "year",
-        label = "Year:",
+        inputId = "current_year",
+        label = "Current Year:",
         choices = year_list,
         selected = 99,
-        size = 5,
+        size = 4,
         selectize = FALSE
       ),
       selectInput(
-        inputId = "accident severity",
-        label = "Accident Severity:",
+        inputId = "previous_year",
+        label = "Previous Year:",
         choices = severity_list,
-        selected = "Fatal",
-        size = 3,
+        selected = 99,
+        size = 4,
         selectize = FALSE
       ),
       selectInput(
-        inputId = "weather condition",
+        inputId = "weather_condition",
         label = "Weather Condition:",
         choices = weather_list,
         selected = "Fine",
@@ -33,7 +33,7 @@ ui <- dashboardPage(
         selectize = FALSE
       ),
       selectInput(
-        inputId = "vehicles",
+        inputId = "vehicle_type",
         label = "Vehicle:",
         choices = vehicle_list,
         selected = "Motorcycle",
@@ -41,8 +41,8 @@ ui <- dashboardPage(
         selectize = FALSE
       ),
       actionLink("remove", "Remove details tabs"),
-      menuItem("Source Code", icon = icon("github"), href = "https://github.com/Silas-Ochieng"),
-      menuItem("About Me", icon = icon("linkedin"), href = "https://www.linkedin.com/in/silas-ochieng"),
+      menuItem("Source Code", icon = icon("github"), href = "https://github.com/Jeremiah-Katumo"),
+      menuItem("About Me", icon = icon("linkedin"), href = "https://www.linkedin.com/in/Jeremiah-Katumo"),
       menuItem("Video", icon = icon("youtube"), href = "")
     )
   ),
@@ -68,3 +68,5 @@ ui <- dashboardPage(
 
 
 )
+
+
