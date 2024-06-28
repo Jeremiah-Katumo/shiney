@@ -19,7 +19,7 @@ ui <- dashboardPage(
       selectInput(
         inputId = "previous_year",
         label = "Previous Year:",
-        choices = severity_list,
+        choices = year_list,
         selected = 99,
         size = 4,
         selectize = FALSE
@@ -54,16 +54,16 @@ ui <- dashboardPage(
                   title = "Main Dashboard",
                   value = "page1",
                   fluidRow(
-                    valueBoxOutput("total_accidents"),
-                    valueBoxOutput("total_casualties")
+                    valueBoxOutput("total_accidents", width = 4),
+                    valueBoxOutput("total_casualties", width = 4)
                   ),
                   fluidRow(
                     valueBoxOutput("fatal_casualties"),
                     valueBoxOutput("serious_casualties"),
                     valueBoxOutput("slight_casualties")
                   )
-                )
-    )
+                 )
+               )
   )
 
 

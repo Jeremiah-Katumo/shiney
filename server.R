@@ -81,19 +81,16 @@ server <- function(input, output, session) {
   # })
   # Calculate and display total casualties with percentage change
   output$total_casualties <- renderValueBox({
-    data <- base_filters()
-
     # Calculate total casualties for the selected year
-    total_current_year <- data %>%
-      filter(Year == input$current_year) %>%
+    total_current_year <- base_filters() %>%
+      filter(Year == as.integer(input$current_year)) %>%
       summarise(total_casualties = sum(Number_of_Casualties)) %>%
       pull(total_casualties)
 
     # Calculate total casualties for the previous year
     if (input$previous_year != "All Years") {
-      previous_year <- input$previous_year
-      total_previous_year <- data %>%
-        filter(Year == previous_year) %>%
+      total_previous_year <- base_filters() %>%
+        filter(Year == as.integer(input$previous_year)) %>%
         summarise(total_casualties = sum(Number_of_Casualties)) %>%
         pull(total_casualties)
 
@@ -108,10 +105,10 @@ server <- function(input, output, session) {
       if (!is.na(percentage_change)) {
         percentage_change <- paste0(round(percentage_change, 1), "%")
       } else {
-        percentage_change <- "N/A"
+        percentage_change <- NA
       }
     } else {
-      percentage_change <- "N/A"
+      percentage_change <- NA
     }
 
     # Format total casualties
