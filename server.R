@@ -13,7 +13,7 @@ server <- function(input, output, session) {
         Weather_Conditions == "Fog or mist" ~ "Fog",
         Weather_Conditions %in% c("Raining + high winds", "Raining no high winds") ~ "Raining",
         str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
-        FALSE ~ as.character(Weather_Conditions)
+        TRUE ~ "Others"
       )) %>%
       mutate(`Modified Vehicle_Type` = case_when(
         grepl("^Motorcycle", Vehicle_Type) ~ "Motorcycle",
@@ -65,7 +65,7 @@ server <- function(input, output, session) {
   
   output$total_accidents <- renderValueBox({
     base_filters() %>%
-      nrow() %>%
+      count() %>%
       as.integer() %>%
       prettyNum(big.mark = ",") %>%
       valueBox(icon = icon("chart-bar"), color = "orange", subtitle = "Total Accidents")
@@ -83,7 +83,7 @@ server <- function(input, output, session) {
   output$total_casualties <- renderValueBox({
     # Calculate total casualties for the selected year
     total_current_year <- base_filters() %>%
-      filter(Year == as.integer(input$current_year)) %>%
+      filter(Year == input$current_year) %>%
       summarise(total_casualties = sum(Number_of_Casualties)) %>%
       pull(total_casualties)
 
