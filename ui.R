@@ -2,6 +2,7 @@ library(shiny)
 source("variables.R", local = TRUE)
 source("plots.R", local = TRUE)
 
+
 ui <- dashboardPage(
   title = "www.katush.com",
                     
