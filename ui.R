@@ -55,7 +55,8 @@ ui <- dashboardPage(
                   value = "page1",
                   fluidRow(
                     valueBoxOutput("total_accidents", width = 4),
-                    valueBoxOutput("total_casualties", width = 4)
+                    valueBoxOutput("total_casualties", width = 4),
+                    valueBoxOutput("percentages", width = 4)
                   ),
                   fluidRow(
                     valueBoxOutput("fatal_casualties"),
@@ -63,7 +64,7 @@ ui <- dashboardPage(
                     valueBoxOutput("slight_casualties")
                   )
                  )
-               )
+    )
   )
 
 

@@ -1,11 +1,8 @@
-library(shiny)
-
 server <- function(input, output, session) {
-  tab_list <- NULL
   showNotification("Created by Katush", duration = NULL, type = "message")
   
   base_accidents <- reactive({
-    response <- accident_data %>%
+    accident_data %>%
       mutate(`Modified Date` = `Accident Date`) %>%
       separate(`Modified Date`, into = c("Day", "Month", "Year")) %>%
       mutate(Weather_category = case_when(
@@ -36,123 +33,100 @@ server <- function(input, output, session) {
     
     # Filter by weather condition
     if (input$weather_condition != "Fine") {
-      data <- data[data$`Weather_category` == input$weather_condition, ]
+      data <- data[data$Weather_category == input$weather_condition, ]
     }
     
-    if (input$accident_severity != "Fatal") {
-      data <- data[data$Accident_Severity == input$weather_condition, ]
-    }
+    # Calculate metrics for the current year and the previous year
+    current_year_data <- data[data$Year == input$current_year, ]
+    previous_year_data <- data[data$Year == input$previous_year, ]
     
-    # Filter by date range
-    # data <- data[data$Date >= input$date_range[1] & data$Date <= input$date_range[2], ]
+    current_fatal <- current_year_data %>% filter(Accident_Severity == "Fatal")
+    current_serious <- current_year_data %>% filter(Accident_Severity == "Serious")
+    current_slight <- current_year_data %>% filter(Accident_Severity == "Slight")
     
-    # Filter by year
-    if (input$current_year != "All Years") {
-      data <- data[data$Year == input$current_year, ]
-    } else {
-      data <- data[data$Year %in% c(2019, 2020, 2021, 2022), ]
-    }
+    previous_fatal <- previous_year_data %>% filter(Accident_Severity == "Fatal")
+    previous_serious <- previous_year_data %>% filter(Accident_Severity == "Serious")
+    previous_slight <- previous_year_data %>% filter(Accident_Severity == "Slight")
     
-    if (input$previous_year != "All Years") {
-      data <- data[data$Year == input$previous_year, ]
-    } else {
-      data <- data[data$Year %in% c(2019, 2020, 2021, 2022), ]
-    }
-    
-    data
-  })
-  
-  
-  output$total_accidents <- renderValueBox({
-    base_filters() %>%
-      count() %>%
-      as.integer() %>%
-      prettyNum(big.mark = ",") %>%
-      valueBox(icon = icon("chart-bar"), color = "orange", subtitle = "Total Accidents")
-  })
-  
-  # output$total_casualties <- renderValueBox({
-  #   base_filters() %>%
-  #     pull(Number_of_Casualties) %>%
-  #     sum() %>%
-  #     as.integer() %>%
-  #     prettyNum(big.mark = ",") %>%
-  #     valueBox(icon = icon("chart-bar"), color = "navy", subtitle = "Total Casualties")
-  # })
-  # Calculate and display total casualties with percentage change
-  output$total_casualties <- renderValueBox({
-    # Calculate total casualties for the selected year
-    total_current_year <- base_filters() %>%
-      filter(Year == input$current_year) %>%
-      summarise(total_casualties = sum(Number_of_Casualties)) %>%
-      pull(total_casualties)
-
-    # Calculate total casualties for the previous year
-    if (input$previous_year != "All Years") {
-      total_previous_year <- base_filters() %>%
-        filter(Year == as.integer(input$previous_year)) %>%
-        summarise(total_casualties = sum(Number_of_Casualties)) %>%
-        pull(total_casualties)
-
-      # Calculate percentage change
-      if (total_previous_year != 0) {
-        percentage_change <- ((total_current_year - total_previous_year) / total_previous_year) * 100
-      } else {
-        percentage_change <- NA
-      }
-
-      # Format percentage change
-      if (!is.na(percentage_change)) {
-        percentage_change <- paste0(round(percentage_change, 1), "%")
-      } else {
-        percentage_change <- NA
-      }
-    } else {
-      percentage_change <- NA
-    }
-
-    # Format total casualties
-    total_current_year <- prettyNum(total_current_year, big.mark = ",")
-
-    valueBox(
-      value = total_current_year,
-      subtitle = "Total Casualties",
-      footer = percentage_change,
-      icon = icon("chart-bar"),
-      color = "navy"
+    list(
+      current_year = current_year_data,
+      previous_year = previous_year_data,
+      change = nrow(current_year_data) - nrow(previous_year_data),
+      casualties_change = sum(current_year_data$Number_of_Casualties) - sum(previous_year_data$Number_of_Casualties),
+      fatal_change = sum(current_fatal$Number_of_Casualties) - sum(previous_fatal$Number_of_Casualties),
+      serious_change = sum(current_serious$Number_of_Casualties) - sum(previous_serious$Number_of_Casualties),
+      slight_change = sum(current_slight$Number_of_Casualties) - sum(previous_slight$Number_of_Casualties)
     )
   })
   
-  
-  output$fatal_casualties <- renderValueBox({
-    base_accidents() %>%
-      filter(Accident_Severity == "Fatal") %>%
-      select(Number_of_Casualties) %>%
-      sum() %>%
+  output$total_accidents <- renderValueBox({
+    change <- base_filters()$change
+    print(paste("Total accidents change:", change))  # Debugging
+    change %>%
       as.integer() %>%
       prettyNum(big.mark = ",") %>%
-      valueBox(icon = icon("chart-bar"), color = "red", subtitle = "Fatal Casualties")
+      valueBox(icon = icon("chart-bar"), color = ifelse(change >= 0, "green", "red"), subtitle = "Change in Total Accidents")
+  })
+  
+  output$total_casualties <- renderValueBox({
+    casualties_change <- base_filters()$casualties_change
+    print(paste("Total casualties change:", casualties_change))  # Debugging
+    casualties_change %>%
+      as.integer() %>%
+      prettyNum(big.mark = ",") %>%
+      valueBox(icon = icon("chart-bar"), color = ifelse(casualties_change >= 0, "green", "red"), subtitle = "Change in Total Casualties")
+  })
+  
+  output$percentages <- renderValueBox({
+    total_current_year <- sum(base_filters()$current_year$Number_of_Casualties)
+    total_previous_year <- sum(base_filters()$previous_year$Number_of_Casualties)
+    
+    percentage_change <- if (total_previous_year != 0) {
+      ((total_current_year - total_previous_year) / total_previous_year) * 100
+    } else {
+      NA
+    }
+    
+    percentage_change <- if (!is.na(percentage_change)) {
+      paste0(round(percentage_change, 1), "%")
+    } else {
+      NA
+    }
+    
+    print(paste("Percentage change:", percentage_change))  # Debugging
+    percentage_change <- prettyNum(percentage_change)
+    valueBox(
+      value = percentage_change,
+      subtitle = "Percentage Change",
+      icon = icon("bar-chart"),
+      color = ifelse(percentage_change >= 0, "green", "red")
+    )
+  })
+  
+  output$fatal_casualties <- renderValueBox({
+    fatal_change <- base_filters()$fatal_change
+    print(paste("Fatal casualties change:", fatal_change))  # Debugging
+    fatal_change %>%
+      as.integer() %>%
+      prettyNum(big.mark = ",") %>%
+      valueBox(icon = icon("chart-bar"), color = ifelse(fatal_change >= 0, "green", "red"), subtitle = "Change in Fatal Casualties")
   })
   
   output$serious_casualties <- renderValueBox({
-    base_accidents() %>%
-      filter(Accident_Severity == "Serious") %>%
-      select(Number_of_Casualties) %>%
-      sum() %>%
+    serious_change <- base_filters()$serious_change
+    print(paste("Serious casualties change:", serious_change))  # Debugging
+    serious_change %>%
       as.integer() %>%
       prettyNum(big.mark = ",") %>%
-      valueBox(icon = icon("chart-bar"), color = "lime", subtitle = "Serious Casualties")
+      valueBox(icon = icon("chart-bar"), color = ifelse(serious_change >= 0, "green", "red"), subtitle = "Change in Serious Casualties")
   })
   
   output$slight_casualties <- renderValueBox({
-    base_accidents() %>%
-      filter(Accident_Severity == "Slight") %>%
-      select(Number_of_Casualties) %>%
-      sum() %>%
+    slight_change <- base_filters()$slight_change
+    print(paste("Slight casualties change:", slight_change))  # Debugging
+    slight_change %>%
       as.integer() %>%
       prettyNum(big.mark = ",") %>%
-      valueBox(icon = icon("chart-bar"), color = "yellow", subtitle = "Slight Casualties")
+      valueBox(icon = icon("chart-bar"), color = ifelse(slight_change >= 0, "green", "red"), subtitle = "Change in Slight Casualties")
   })
 }
-
-

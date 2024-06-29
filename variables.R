@@ -5,11 +5,13 @@ library(h2o)
 library(readr)
 library(shiny)
 library(shinydashboard)
+library(shinyWidgets)
 library(shinyjs)
 library(DT)                   # interface to the JavaScript library DataTables
 library(r2d3)
 library(purrr)                # for function programming tools
 library(rlang)
+
 
 
 accident_data <- read_csv("D:/Tableau/accident data.csv", show_col_types = FALSE)
