@@ -3,7 +3,7 @@ server <- function(input, output, session) {
   showNotification("Created by Katush", duration = NULL, type = "message")
   
   base_accidents <- reactive({
-    accident_data_prep()
+    accident_data_prep
   })
   
   base_filters <- reactive({
@@ -41,6 +41,7 @@ server <- function(input, output, session) {
       slight_change = sum(current_slight$Number_of_Casualties) - sum(previous_slight$Number_of_Casualties)
     )
   })
+  
   
   output$total_accidents <- renderValueBox({
     change <- base_filters()$change

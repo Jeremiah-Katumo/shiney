@@ -24,3 +24,26 @@ install.packages("h2o", type="source", repos="https://h2o-release.s3.amazonaws.c
 library(h2o)
 h2o.init()
 
+
+
+data <- data.frame(
+  category = c("A", "B", "C", "D"),
+  value = c(25, 35, 20, 20)
+)
+# Calculate the percentage
+data <- data %>%
+  mutate(percentage = value / sum(value) * 100,
+         ypos = cumsum(percentage) - 0.5 * percentage) # Calculate position for text
+# Create the plot
+donut_chart <- ggplot(data, aes(x = 2, y = value, fill = category)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  xlim(0.5, 2.5) + # Adjust to create a donut shape
+  theme_void() +  # Remove background, grid, and axis
+  theme(legend.position = "right") +
+  geom_text(aes(y = ypos, label = paste0(round(percentage, 1), "%")), color = "white") +
+  labs(title = "Donut Chart Example")
+
+print(donut_chart)
+
+
