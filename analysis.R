@@ -6,31 +6,15 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 library(ggmap)
 library(maps)
+library(chloroplethr)
 
 accident_data <- read_csv("D:/Tableau/accident data.csv")
 View(accident_data)
 
 
-
-# The following two commands remove any previously installed H2O packages for R.
-if ("package:h2o" %in% search()) { detach("package:h2o", unload=TRUE) }
-if ("h2o" %in% rownames(installed.packages())) { remove.packages("h2o") }
-
-# Next, we download packages that H2O depends on.
-pkgs <- c("RCurl","jsonlite")
-for (pkg in pkgs) {
-  if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
-}
-
-# Now we download, install and initialize the H2O package for R.
-install.packages("h2o", type="source", repos="https://h2o-release.s3.amazonaws.com/h2o/rel-3.46.0/3/R")
-
 # Finally, let's load H2O and start up an H2O cluster
 library(h2o)
 h2o.init()
-
-install.packages(c("ggplot2", "sf", "rnaturalearth", "rnaturalearthdata"))
-
 
 
 data <- data.frame(
@@ -155,6 +139,9 @@ ggmap(usa_map) +
     axis.title.x = element_text(size = 12),
     axis.title.y = element_text(size = 12)
   )
+
+accident_data_prep %>% select(`District Area`, Number_of_Casualties) %>%
+  state_chloropleth()
 
 
 
