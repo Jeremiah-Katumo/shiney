@@ -92,6 +92,32 @@ ggplot(data = world) +
 
 
 
+data <- accident_data_prep %>% 
+  select(
+    Index, Accident_Severity, Latitude, Longitude, Number_of_Casualties, `District Area`
+  ) %>% na.omit()
+# Convert to spatial data frame
+data_sf <- st_as_sf(data, coords = c("Longitude", "Latitude"), crs = 4326)
+# Get world map
+world <- ne_countries(scale = "medium", returnclass = "sf")
+# Plot the map
+ggplot(data = world) +
+  geom_sf(fill = "lightblue") +
+  geom_sf(data = data_sf, aes(color = `District Area`), size = 5) +
+  theme_minimal() +
+  labs(title = "UK Road Accidents Casualties Distributed by Location",
+       x = "Longitude",
+       y = "Latitude",
+       color = "Locations") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12)
+  )
+
+
+
+
 # Sample dataset
 data <- data.frame(
   id = 1:5,
