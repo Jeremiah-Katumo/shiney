@@ -3,25 +3,7 @@ server <- function(input, output, session) {
   showNotification("Created by Katush", duration = NULL, type = "message")
   
   base_accidents <- reactive({
-    accident_data %>%
-      mutate(`Modified Date` = `Accident Date`) %>%
-      separate(`Modified Date`, into = c("Day", "Month", "Year")) %>%
-      mutate(Weather_category = case_when(
-        Weather_Conditions %in% c("Fine + high winds", "Fine no high winds") ~ "Fine",
-        Weather_Conditions == "Fog or mist" ~ "Fog",
-        Weather_Conditions %in% c("Raining + high winds", "Raining no high winds") ~ "Raining",
-        str_detect(Weather_Conditions, "^Snowing") ~ "Snowing",
-        TRUE ~ "Others"
-      )) %>%
-      mutate(`Modified Vehicle_Type` = case_when(
-        grepl("^Motorcycle", Vehicle_Type) ~ "Motorcycle",
-        grepl("^Goods", Vehicle_Type) ~ "Transit",
-        grepl("^(Car|Taxi|Van)", Vehicle_Type) ~ "Cars",
-        grepl("^Agricultural", Vehicle_Type) ~ "Agricultural",
-        grepl("^(Bus|Minibus)", Vehicle_Type) ~ "Bus",
-        grepl("^(Other|Pedal|Ridden)", Vehicle_Type) ~ "Others",
-        TRUE ~ "Others"  # Catch-all for any values that don't match the patterns
-      ))
+    accident_data_prep()
   })
   
   base_filters <- reactive({
