@@ -19,6 +19,10 @@ server <- function(input, output, session) {
       data <- data[data$Weather_category == input$weather_condition, ]
     }
     
+    if (input$accident_severity != "Fatal") {
+      data <- data[data$Accident_Severity == input$accident_severity, ]
+    }
+    
     # Calculate metrics for the current year and the previous year
     current_year_data <- data[data$Year == input$current_year, ]
     previous_year_data <- data[data$Year == input$previous_year, ]
@@ -26,12 +30,12 @@ server <- function(input, output, session) {
     current_fatal <- current_year_data %>% filter(Accident_Severity == "Fatal")
     current_serious <- current_year_data %>% filter(Accident_Severity == "Serious")
     current_slight <- current_year_data %>% filter(Accident_Severity == "Slight")
-    
     previous_fatal <- previous_year_data %>% filter(Accident_Severity == "Fatal")
     previous_serious <- previous_year_data %>% filter(Accident_Severity == "Serious")
     previous_slight <- previous_year_data %>% filter(Accident_Severity == "Slight")
     
     list(
+      data,
       current_year = current_year_data,
       previous_year = previous_year_data,
       change = nrow(current_year_data) - nrow(previous_year_data),
@@ -95,7 +99,6 @@ server <- function(input, output, session) {
       prettyNum(big.mark = ",") %>%
       valueBox(icon = icon("chart-bar"), color = ifelse(fatal_change >= 0, "green", "red"), subtitle = "Change in Fatal Casualties")
   })
-  
   output$serious_casualties <- renderValueBox({
     serious_change <- base_filters()$serious_change
     print(paste("Serious casualties change:", serious_change))  # Debugging
@@ -104,7 +107,6 @@ server <- function(input, output, session) {
       prettyNum(big.mark = ",") %>%
       valueBox(icon = icon("chart-bar"), color = ifelse(serious_change >= 0, "green", "red"), subtitle = "Change in Serious Casualties")
   })
-  
   output$slight_casualties <- renderValueBox({
     slight_change <- base_filters()$slight_change
     print(paste("Slight casualties change:", slight_change))  # Debugging
@@ -112,5 +114,53 @@ server <- function(input, output, session) {
       as.integer() %>%
       prettyNum(big.mark = ",") %>%
       valueBox(icon = icon("chart-bar"), color = ifelse(slight_change >= 0, "green", "red"), subtitle = "Change in Slight Casualties")
+  })
+  
+  #### PLOTS ####
+  base_plots_data <- reactive({
+    data <- base_accidents()
+    
+    # Filter by vehicle type
+    if (input$vehicle_type != "Motorcycle") {
+      data <- data[data$`Modified Vehicle_Type` == input$vehicle_type, ]
+    }
+    
+    # Filter by weather condition
+    if (input$weather_condition != "Fine") {
+      data <- data[data$Weather_category == input$weather_condition, ]
+    }
+    
+    if (input$accident_severity != "Fatal") {
+      data <- data[data$Accident_Severity == input$accident_severity, ]
+    }
+    
+    plotsdata <- plots_data_function(
+      data = data,
+      severeness=input$accident_severity
+    )
+    
+    plotsdata
+  })
+  
+  output$donutChart <- renderPlotly({
+    # Create the donut chart
+    interactive_donut_chart <- base_plots_data() %>%
+      plot_ly(
+        labels = ~Weather_category, 
+        values = ~total_casualties, 
+        type = 'pie',
+        textinfo = 'label+percent',
+        insidetextorientation = 'radial',
+        hole = 0.5
+      ) %>%
+      layout(
+        title = 'Fatal Casualties caused by Weather Conditions',
+        showlegend = TRUE,
+        legend = list(orientation = 'h'),
+        plot_bgcolor = '#f8f9fa',   # Plot background color
+        paper_bgcolor = '#ffffff'   # Paper background color
+      )
+    
+    interactive_donut_chart
   })
 }

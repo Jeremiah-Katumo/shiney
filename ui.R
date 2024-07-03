@@ -36,6 +36,14 @@ ui <- dashboardPage(
         selectize = FALSE
       ),
       selectInput(
+        inputId = "accident_severity",
+        label = "Accident Severity:",
+        choices = severity_list,
+        selected = "Fatal",
+        size = 3,
+        selectize = FALSE
+      ),
+      selectInput(
         inputId = "vehicle_type",
         label = "Vehicle:",
         choices = vehicle_list,
@@ -65,6 +73,10 @@ ui <- dashboardPage(
                     valueBoxOutput("fatal_casualties"),
                     valueBoxOutput("serious_casualties"),
                     valueBoxOutput("slight_casualties")
+                  ),
+                  fluidRow(
+                    column(width = 6, plotlyOutput("donutChart")),
+                    column(width = 6, plotlyOutput("donutChart"))
                   )
                  )
     )

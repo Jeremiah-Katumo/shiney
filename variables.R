@@ -36,6 +36,53 @@ accident_data_prep <- accident_data %>%
     TRUE ~ "Others"  # Catch-all for any values that don't match the patterns
   ))
 
+
+plots_data <- accident_data_prep %>%
+  filter(Accident_Severity == "Fatal") %>%
+  group_by(Weather_category) %>%
+  summarise(
+    count = n(),
+    total_casualties = sum(Number_of_Casualties)
+  ) %>%
+  mutate(
+    percentage = (total_casualties / sum(total_casualties)) * 100,
+    ypos = cumsum(percentage) - 0.5 * percentage
+  ) %>%
+  as.data.frame()
+# total_casualties <- as.data.frame(plots_data$total_casualties) 
+# total_casualties <- as.data.frame(plots_data[["total_casualties"]])
+total_casualties <- plots_data %>% select(total_casualties) %>% as.data.frame()
+# plots_data[, 3]
+plotsdata <- accident_data_prep %>%
+  filter(Accident_Severity == "Fatal") %>%
+  group_by(Weather_category) %>%
+  summarise(
+    count = n(),
+  ) %>%
+  cbind(total_casualties) %>%
+  mutate(
+    percentage = (total_casualties / sum(total_casualties)) * 100,
+    ypos = cumsum(percentage) - 0.5 * percentage
+  ) %>%
+  as.data.frame()
+plots_data_function <- function(data, severeness) {
+  plotsdata <- data %>%
+    filter(Accident_Severity == severeness) %>%
+    group_by(Weather_category) %>%
+    summarise(
+      count = n(),
+    ) %>%
+    cbind(total_casualties) %>%
+    mutate(
+      percentage = (total_casualties / sum(total_casualties)) * 100,
+      ypos = cumsum(percentage) - 0.5 * percentage
+    ) %>%
+    as.data.frame()
+  
+  return(plotsdata)
+}
+plots_data_function(data=accident_data_prep,severeness="Fatal")
+
 ################################################################################
 
 new_df <- accident_data %>%
